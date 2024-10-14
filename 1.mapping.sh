@@ -5,7 +5,8 @@ ref_seq=/home/gcpuser/sky_workdir/hg38.chrXYM
 java=/data/WALKUP-15628/231008_SL-EXB_0084_A227CVTLT3/1697061146/juicer/scripts/common/juicer_tools.jar
 cpu=48
 mem=48G
-
+output_file="mapping_flagstat.txt"
+> "$output_file"
 if [[ ! -d "1.trim" ]]; then
         mkdir 1.trim
 fi
@@ -53,16 +54,16 @@ o_aligned.bam
         java -jar /root/picard.jar MarkDuplicates I=./2.mapping/${sample}_hg38_sort.bam O=./2.mapping/${sample}_hg38_sort.rmdup.bam M=./2.mapping/${sample}_hg38_sort.txt REMOVE_DUPLICATES=true TMP_DIR=./
         rm ./2.mapping/${sample}_hg38_sort.bam
         samtools index -@ 48 ./2.mapping/${sample}_hg38_sort.rmdup.bam
+        samtools view -@ 48 -F 4 -b ./2.mapping/${sample}_hg38_sort.rmdup.bam > ./2.mapping/${sample}_hg38_sort.rmdup_mapped.bam
+        rm ./2.mapping/${sample}_hg38_sort.rmdup.bam
+        samtools flagstat -@ 48 ./2.mapping/${sample}_hg38_sort.rmdup_mapped.bam >> "$output_file"
 #        bamCoverage --bam ./2.mapping/${sample}_hg38_sort.rmdup.bam -o ./3.track_peak/${sample}_hg38_sort.rmdup_CPM.bw --binSize 25 --smoothLength 75 --numberOfProcessors 48 --normalizeUsing CPM --effectiveGenomeSize 2913022398 -
 -centerReads --extendReads --ignoreForNormalization chrM
         macs2 callpeak -t ./2.mapping/${sample}_hg38_sort.rmdup.bam -g hs -n ${sample}_hg38_sort.rmdup_q001 -q 0.01 --keep-dup="all" -f "BAMPE" --outdir ./3.track_peak/
 #        macs2 callpeak -t ./2.mapping/${sample}_hg38_sort.rmdup.bam -g hs -n ${sample}_hg38_sort.rmdup_q005 -q 0.05 --keep-dup="all" -f "BAMPE" --outdir ./3.track_peak/
         samtools sort -@ 48 ./2.mapping/${sample}_droso_aligned.bam > ./2.mapping/${sample}_droso_sort.bam
         java -jar /root/picard.jar MarkDuplicates I=./2.mapping/${sample}_droso_sort.bam O=./2.mapping/${sample}_droso_sort.rmdup.bam M=./2.mapping/${sample}_droso_sort.txt REMOVE_DUPLICATES=true TMP_DIR=./
-#       amtools view -@ 48 -F 4 -b ${sample}_hg38_sort.rmdup.bam > ${sample}_hg38_sort.rmdup_mapped.bam 
-#       amtools view -@ 48 -F 4 -b ${sample}_droso_hg38_sort.rmdup.bam > ${sample}_droso_hg38_sort.rmdup_mapped.bam
-        #hg38_bam="${sample}_hg38_sort.rmdup.bam"
-        #droso_bam="${sample}_droso_hg38_sort.rmdup.bam"
+
 
     # Check if the BAM file exists to ensure we have files to work on
         if [ -f "$hg38_bam" ] && [ -f "$droso_bam" ]; then
