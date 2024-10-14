@@ -47,7 +47,7 @@ for filename in os.listdir(log_dir):
                         data[prefix][f'{file_type}_unique_reads'] = unique_reads
                         data[prefix][f'{file_type}_percent_duplication'] = percent_duplication
 
-    elif filename.endswith("_droso_sort.rmdup.bam"):
+    elif filename.endswith("_droso_sort.txt"):
         file_path = os.path.join(log_dir, filename)
         with open(file_path, 'r') as file:
             lines = file.readlines()
